@@ -1,0 +1,47 @@
+{
+  "version": "1.0",
+  "comment": "Nur durch den Nutzer persönlich erweiterbar. Keine automatischen Schreibzugriffe durch Claude oder Skripte.",
+  "last_updated": "2026-04-20",
+
+  "green": {
+    "comment": "Permissive Licenses — uneingeschränkt erlaubt für kommerzielle Closed-Source-Projekte. Pflicht: Attribution (Copyright-Hinweis) beibehalten.",
+    "licenses": [
+      { "spdx": "Apache-2.0",    "name": "Apache License 2.0",          "info": "https://spdx.org/licenses/Apache-2.0.html",    "added": "2026-03-16" },
+      { "spdx": "MIT",           "name": "MIT License",                  "info": "https://spdx.org/licenses/MIT.html",           "added": "2026-03-16" },
+      { "spdx": "BSD-2-Clause",  "name": "BSD 2-Clause \"Simplified\"",  "info": "https://spdx.org/licenses/BSD-2-Clause.html",  "added": "2026-03-16" },
+      { "spdx": "BSD-3-Clause",  "name": "BSD 3-Clause \"New\"",         "info": "https://spdx.org/licenses/BSD-3-Clause.html",  "added": "2026-03-16" },
+      { "spdx": "ISC",           "name": "ISC License",                  "info": "https://spdx.org/licenses/ISC.html",           "added": "2026-03-16" },
+      { "spdx": "0BSD",          "name": "BSD Zero Clause License",      "info": "https://spdx.org/licenses/0BSD.html",          "added": "2026-03-16" },
+      { "spdx": "CC0-1.0",       "name": "Creative Commons Zero v1.0",   "info": "https://spdx.org/licenses/CC0-1.0.html",       "added": "2026-03-16" },
+      { "spdx": "Zlib", 	 "name": "zlib License",                 "info": "https://spdx.org/licenses/Zlib.html",          "added": "2026-03-16" },
+      { "spdx": "Python-2.0",    "name": "Python License 2.0",           "info": "https://spdx.org/licenses/Python-2.0.html",    "added": "2026-04-20" }
+    ]
+  },
+
+  "yellow": {
+    "comment": "Weak Copyleft — fallabhängig erlaubt. Erlaubt wenn dynamisch eingebunden und Quellcode der Bibliothek unverändert. Niemals auto-approve. Erstens Alternativen suchen.",
+    "licenses": [
+      { "spdx": "LGPL-2.0-only",  "name": "GNU Lesser General Public License v2.0",  "info": "https://spdx.org/licenses/LGPL-2.0-only.html" },
+      { "spdx": "LGPL-2.1-only",  "name": "GNU Lesser General Public License v2.1",  "info": "https://spdx.org/licenses/LGPL-2.1-only.html" },
+      { "spdx": "LGPL-3.0-only",  "name": "GNU Lesser General Public License v3.0",  "info": "https://spdx.org/licenses/LGPL-3.0-only.html" },
+      { "spdx": "MPL-2.0",        "name": "Mozilla Public License 2.0",               "info": "https://spdx.org/licenses/MPL-2.0.html" },
+      { "spdx": "EPL-1.0",        "name": "Eclipse Public License 1.0",               "info": "https://spdx.org/licenses/EPL-1.0.html" },
+      { "spdx": "EPL-2.0",        "name": "Eclipse Public License 2.0",               "info": "https://spdx.org/licenses/EPL-2.0.html" }
+    ]
+  },
+
+  "red": {
+    "comment": "Strong Copyleft / Viral — streng verboten für kommerzielle Closed-Source-Projekte. Build bricht hart ab. Keine Ausnahmen ohne schriftliche Freigabe.",
+    "licenses": [
+      { "spdx": "GPL-2.0-only",  "name": "GNU General Public License v2.0",  "info": "https://spdx.org/licenses/GPL-2.0-only.html" },
+      { "spdx": "GPL-2.0",       "name": "GNU General Public License v2.0",  "info": "https://spdx.org/licenses/GPL-2.0.html" },
+      { "spdx": "GPL-3.0-only",  "name": "GNU General Public License v3.0",  "info": "https://spdx.org/licenses/GPL-3.0-only.html" },
+      { "spdx": "GPL-3.0",       "name": "GNU General Public License v3.0",  "info": "https://spdx.org/licenses/GPL-3.0.html" },
+      { "spdx": "AGPL-3.0-only", "name": "GNU Affero General Public License v3.0", "info": "https://spdx.org/licenses/AGPL-3.0-only.html" },
+      { "spdx": "AGPL-3.0",      "name": "GNU Affero General Public License v3.0", "info": "https://spdx.org/licenses/AGPL-3.0.html" },
+      { "spdx": "SSPL-1.0",      "name": "Server Side Public License 1.0",         "info": "https://spdx.org/licenses/SSPL-1.0.html" }
+    ]
+  },
+
+  "compound_rule": "Bei Compound-Lizenzen (z.B. 'MIT OR Apache-2.0'): Grün wenn mindestens eine Option grün ist. Grüne Option wählen und entsprechend attributieren."
+}

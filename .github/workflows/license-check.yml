@@ -1,0 +1,107 @@
+name: License Check (reusable)
+
+# Reusable license-check workflow shared across all blodilo projects.
+# See ~/.claude/CLAUDE.md → "SBOM-Generierung & License-Check-Gate" for the
+# umbrella spec. Consumers call this via `uses:`; see README.md.
+
+on:
+  workflow_call:
+    inputs:
+      language:
+        description: 'node | python | go | kotlin | rust | mixed'
+        type: string
+        required: true
+      frontend-path:
+        description: 'Path to the frontend package (used for node SBOM)'
+        type: string
+        default: ./frontend
+      backend-path:
+        description: 'Path to the backend package (used for python SBOM)'
+        type: string
+        default: ./backend
+
+jobs:
+  generate-and-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout consumer repo
+        uses: actions/checkout@v4
+
+      # ── Frontend SBOM (Node) ──────────────────────────────────────────────
+      - name: Setup Node
+        if: contains(fromJson('["node", "mixed"]'), inputs.language)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install frontend deps
+        if: contains(fromJson('["node", "mixed"]'), inputs.language)
+        working-directory: ${{ inputs.frontend-path }}
+        run: npm ci --no-audit --no-fund
+
+      - name: Generate frontend SBOM
+        if: contains(fromJson('["node", "mixed"]'), inputs.language)
+        working-directory: ${{ inputs.frontend-path }}
+        run: |
+          npx --yes @cyclonedx/cyclonedx-npm@latest \
+            --output-file ../sbom-frontend.json \
+            --output-format json \
+            --omit dev
+
+      # ── Backend SBOM (Python) ─────────────────────────────────────────────
+      - name: Setup Python
+        if: contains(fromJson('["python", "mixed"]'), inputs.language)
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install cyclonedx-py
+        if: contains(fromJson('["python", "mixed"]'), inputs.language)
+        run: pip install --quiet cyclonedx-bom
+
+      - name: Generate backend SBOM
+        if: contains(fromJson('["python", "mixed"]'), inputs.language)
+        working-directory: ${{ inputs.backend-path }}
+        run: |
+          # Use lock-file based generation when available (uv/Poetry/pip-compile),
+          # else fall back to environment scan.
+          if [ -f uv.lock ]; then
+            cyclonedx-py requirements --of json -o ../sbom-backend.json uv.lock || \
+            cyclonedx-py environment --of json -o ../sbom-backend.json
+          elif [ -f poetry.lock ]; then
+            cyclonedx-py poetry --of json -o ../sbom-backend.json
+          elif [ -f requirements.txt ]; then
+            cyclonedx-py requirements --of json -o ../sbom-backend.json requirements.txt
+          else
+            cyclonedx-py environment --of json -o ../sbom-backend.json
+          fi
+
+      # ── Validate ──────────────────────────────────────────────────────────
+      - name: Checkout license-check tooling
+        uses: actions/checkout@v4
+        with:
+          repository: blodilo/.github
+          path: __license_check
+          ref: main
+
+      - name: Run license validator
+        run: |
+          ARGS=()
+          [ -f sbom-frontend.json ] && ARGS+=(--sbom sbom-frontend.json)
+          [ -f sbom-backend.json ]  && ARGS+=(--sbom sbom-backend.json)
+          [ -f license-exceptions.json ] && ARGS+=(--exceptions license-exceptions.json)
+          python3 __license_check/license-check/check_licenses.py \
+            --whitelist __license_check/license-check/license-whitelist.json \
+            "${ARGS[@]}"
+
+      # ── Upload SBOMs as workflow artifact (90 day retention) ──────────────
+      - name: Upload SBOMs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom-${{ github.run_id }}
+          path: |
+            sbom-frontend.json
+            sbom-backend.json
+          if-no-files-found: ignore
+          retention-days: 90
