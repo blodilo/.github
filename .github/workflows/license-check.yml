@@ -55,19 +55,17 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install cyclonedx-py
+      - name: Install uv
         if: contains(fromJson('["python", "mixed"]'), inputs.language)
-        run: pip install --quiet cyclonedx-bom
+        run: pip install --quiet uv cyclonedx-bom
 
       - name: Generate backend SBOM
         if: contains(fromJson('["python", "mixed"]'), inputs.language)
         working-directory: ${{ inputs.backend-path }}
         run: |
-          # Use lock-file based generation when available (uv/Poetry/pip-compile),
-          # else fall back to environment scan.
           if [ -f uv.lock ]; then
-            cyclonedx-py requirements --of json -o ../sbom-backend.json uv.lock || \
-            cyclonedx-py environment --of json -o ../sbom-backend.json
+            uv sync --all-extras
+            uv run cyclonedx-py environment --of json -o ../sbom-backend.json
           elif [ -f poetry.lock ]; then
             cyclonedx-py poetry --of json -o ../sbom-backend.json
           elif [ -f requirements.txt ]; then
