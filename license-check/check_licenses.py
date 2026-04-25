@@ -72,12 +72,34 @@ def extract_components(sbom: dict) -> list[dict]:
 
 
 # Common non-SPDX license names mapped to their SPDX equivalents.
+# Includes PyPI "classifier"-style strings emitted by cyclonedx-py for
+# Python packages.
 LICENSE_ALIASES = {
     "Public Domain": "CC0-1.0",
     "Public-Domain": "CC0-1.0",
     "PD": "CC0-1.0",
     "Unlicense": "Unlicense",
+    # PyPI classifier strings (cyclonedx-py output)
+    "License :: OSI Approved :: Apache Software License": "Apache-2.0",
+    "License :: OSI Approved :: MIT License": "MIT",
+    "License :: OSI Approved :: BSD License": "BSD-3-Clause",
+    "License :: OSI Approved :: ISC License (ISCL)": "ISC",
+    "License :: OSI Approved :: Mozilla Public License 2.0 (MPL 2.0)": "MPL-2.0",
+    "License :: OSI Approved :: GNU Lesser General Public License v2 or later (LGPLv2+)": "LGPL-2.1-or-later",
+    "License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)": "LGPL-3.0-only",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)": "GPL-3.0-only",
+    "License :: OSI Approved :: GNU Affero General Public License v3": "AGPL-3.0-only",
+    "License :: OSI Approved :: Python Software Foundation License": "PSF-2.0",
 }
+
+
+def _split_compound(spdx: str) -> list[str]:
+    """Split combined license expressions ('A OR B' or 'A, B') into operands."""
+    s = spdx.strip()
+    # Comma-separated PyPI classifier multi-license becomes OR-expression
+    if "," in s and " OR " not in s.upper() and " AND " not in s.upper():
+        return [_normalise(p.strip()) for p in s.split(",") if p.strip()]
+    return [_normalise(s)]
 
 
 def _normalise(spdx: str) -> str:
@@ -85,18 +107,19 @@ def _normalise(spdx: str) -> str:
 
 
 def licenses_for(component: dict) -> list[str]:
-    """Return SPDX expressions found on the component."""
+    """Return SPDX expressions found on the component, expanding comma-multi
+    licenses into separate entries (treated as OR by classify())."""
     out: list[str] = []
     for lic in component.get("licenses", []) or []:
         # CycloneDX shape: {"license": {"id": "MIT"}} or {"license": {"name": "..."}} or {"expression": "..."}
+        raw = None
         if "expression" in lic:
-            out.append(_normalise(lic["expression"]))
+            raw = lic["expression"]
         elif "license" in lic:
             ref = lic["license"]
-            if ref.get("id"):
-                out.append(_normalise(ref["id"]))
-            elif ref.get("name"):
-                out.append(_normalise(ref["name"]))
+            raw = ref.get("id") or ref.get("name")
+        if raw:
+            out.extend(_split_compound(raw))
     return out
 
 

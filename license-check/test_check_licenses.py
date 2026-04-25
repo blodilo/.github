@@ -81,6 +81,17 @@ class TestLicensesFor(unittest.TestCase):
         comp = {"licenses": [{"license": {"name": "Public Domain"}}]}
         self.assertEqual(mod.licenses_for(comp), ["CC0-1.0"])
 
+    def test_pypi_classifier_alias(self):
+        comp = {"licenses": [{"license": {"name": "License :: OSI Approved :: Apache Software License"}}]}
+        self.assertEqual(mod.licenses_for(comp), ["Apache-2.0"])
+
+    def test_comma_multi_license_expanded(self):
+        comp = {"licenses": [{"license": {"name": "License :: OSI Approved :: Apache Software License, License :: OSI Approved :: BSD License"}}]}
+        self.assertEqual(
+            mod.licenses_for(comp),
+            ["Apache-2.0", "BSD-3-Clause"],
+        )
+
 
 class TestCanonicalName(unittest.TestCase):
     def test_unscoped(self):
