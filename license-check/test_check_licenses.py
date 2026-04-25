@@ -77,6 +77,47 @@ class TestLicensesFor(unittest.TestCase):
     def test_no_licenses(self):
         self.assertEqual(mod.licenses_for({}), [])
 
+    def test_public_domain_alias(self):
+        comp = {"licenses": [{"license": {"name": "Public Domain"}}]}
+        self.assertEqual(mod.licenses_for(comp), ["CC0-1.0"])
+
+
+class TestCanonicalName(unittest.TestCase):
+    def test_unscoped(self):
+        self.assertEqual(mod.canonical_name({"name": "react", "version": "18"}), "react")
+
+    def test_scoped_via_group(self):
+        comp = {"name": "design", "group": "@creaminds", "version": "0.1"}
+        self.assertEqual(mod.canonical_name(comp), "@creaminds/design")
+
+    def test_scoped_already_in_name(self):
+        # If name already has scope, do not double-prepend group
+        comp = {"name": "@creaminds/design", "group": "@creaminds", "version": "0.1"}
+        self.assertEqual(mod.canonical_name(comp), "@creaminds/design")
+
+
+class TestMatchException(unittest.TestCase):
+    def test_exact_match(self):
+        ex = [{"name": "x", "version": "1.0", "reason": "ok"}]
+        self.assertEqual(mod.match_exception("x", "1.0", ex), "ok")
+
+    def test_any_version(self):
+        ex = [{"name": "x", "version": "*", "reason": "ok"}]
+        self.assertEqual(mod.match_exception("x", "1.0", ex), "ok")
+
+    def test_wrong_version(self):
+        ex = [{"name": "x", "version": "1.0", "reason": "ok"}]
+        self.assertIsNone(mod.match_exception("x", "2.0", ex))
+
+    def test_name_prefix_wildcard(self):
+        ex = [{"name": "lightningcss*", "version": "*", "reason": "ok"}]
+        self.assertEqual(mod.match_exception("lightningcss-linux-x64", "1.0", ex), "ok")
+        self.assertEqual(mod.match_exception("lightningcss", "1.0", ex), "ok")
+
+    def test_name_prefix_no_match(self):
+        ex = [{"name": "foo*", "version": "*", "reason": "ok"}]
+        self.assertIsNone(mod.match_exception("bar", "1.0", ex))
+
 
 class TestCheck(unittest.TestCase):
     def _run(self, sbom_components, exceptions=None):

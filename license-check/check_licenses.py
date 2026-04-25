@@ -36,16 +36,34 @@ def load_whitelist(path: Path) -> dict[str, set[str]]:
     }
 
 
-def load_exceptions(path: Path | None) -> dict[str, str]:
-    """Returns {package@version: reason} for granted exceptions, else {}."""
+def load_exceptions(path: Path | None) -> list[dict]:
+    """Return the raw exception entries; matching is done in match_exception().
+
+    An exception entry has {name, version, spdx, reason}. `name` may end with
+    `*` for prefix-match (e.g. `lightningcss*`). `version` may be `*` for any.
+    """
     if path is None or not path.exists():
-        return {}
+        return []
     raw = json.loads(path.read_text(encoding="utf-8"))
-    out: dict[str, str] = {}
-    for entry in raw.get("package-exceptions", []):
-        key = f"{entry['name']}@{entry.get('version', '*')}"
-        out[key] = entry.get("reason", "")
-    return out
+    return raw.get("package-exceptions", [])
+
+
+def match_exception(name: str, version: str, exceptions: list[dict]) -> str | None:
+    """Return the reason string of the first matching exception, else None."""
+    for ex in exceptions:
+        ex_name = ex.get("name", "")
+        ex_ver = ex.get("version", "*")
+        # Name match: exact or `*`-suffix wildcard prefix-match
+        if ex_name.endswith("*"):
+            if not name.startswith(ex_name[:-1]):
+                continue
+        elif ex_name != name:
+            continue
+        # Version match
+        if ex_ver != "*" and ex_ver != version:
+            continue
+        return ex.get("reason", "")
+    return None
 
 
 def extract_components(sbom: dict) -> list[dict]:
@@ -53,20 +71,45 @@ def extract_components(sbom: dict) -> list[dict]:
     return list(sbom.get("components", []))
 
 
+# Common non-SPDX license names mapped to their SPDX equivalents.
+LICENSE_ALIASES = {
+    "Public Domain": "CC0-1.0",
+    "Public-Domain": "CC0-1.0",
+    "PD": "CC0-1.0",
+    "Unlicense": "Unlicense",
+}
+
+
+def _normalise(spdx: str) -> str:
+    return LICENSE_ALIASES.get(spdx.strip(), spdx.strip())
+
+
 def licenses_for(component: dict) -> list[str]:
-    """Return SPDX expressions found on the component, lowercased to lower for comparison only when matching."""
+    """Return SPDX expressions found on the component."""
     out: list[str] = []
     for lic in component.get("licenses", []) or []:
         # CycloneDX shape: {"license": {"id": "MIT"}} or {"license": {"name": "..."}} or {"expression": "..."}
         if "expression" in lic:
-            out.append(lic["expression"])
+            out.append(_normalise(lic["expression"]))
         elif "license" in lic:
             ref = lic["license"]
             if ref.get("id"):
-                out.append(ref["id"])
+                out.append(_normalise(ref["id"]))
             elif ref.get("name"):
-                out.append(ref["name"])
+                out.append(_normalise(ref["name"]))
     return out
+
+
+def canonical_name(component: dict) -> str:
+    """Return the canonical npm-style name including scope.
+
+    CycloneDX splits `@scope/pkg` into `group="@scope"` and `name="pkg"`.
+    """
+    name = component.get("name", "<unnamed>")
+    group = component.get("group")
+    if group and not name.startswith(f"{group}/"):
+        return f"{group}/{name}"
+    return name
 
 
 _OR_SPLIT = re.compile(r"\s+OR\s+", flags=re.IGNORECASE)
@@ -99,7 +142,7 @@ def _classify_single(spdx: str, whitelist: dict[str, set[str]]) -> str:
 def check(
     sboms: list[Path],
     whitelist: dict[str, set[str]],
-    exceptions: dict[str, str],
+    exceptions: list[dict],
 ) -> tuple[list[dict], list[dict]]:
     """Returns (violations, all_components)."""
     violations: list[dict] = []
@@ -111,7 +154,7 @@ def check(
             continue
         sbom = json.loads(sbom_path.read_text(encoding="utf-8"))
         for comp in extract_components(sbom):
-            name = comp.get("name", "<unnamed>")
+            name = canonical_name(comp)
             version = comp.get("version", "")
             license_exprs = licenses_for(comp) or ["UNKNOWN"]
             best = "unknown"
@@ -138,10 +181,9 @@ def check(
             if best == "green":
                 continue
 
-            key_exact = f"{name}@{version}"
-            key_any = f"{name}@*"
-            if key_exact in exceptions or key_any in exceptions:
-                entry["exception"] = exceptions.get(key_exact) or exceptions.get(key_any)
+            reason = match_exception(name, version, exceptions)
+            if reason is not None:
+                entry["exception"] = reason
                 continue
 
             violations.append(entry)
