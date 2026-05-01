@@ -13,7 +13,7 @@ Konfigurations-Snippets, die alle blodilo-Projekte konsumieren.
 
 ## Konventionen
 
-- **Sichtbarkeit**: privat (kein sensitiver Inhalt, aber org-intern reicht)
+- **Sichtbarkeit**: public — der Inhalt (Reusable Workflow + permissive-License-Whitelist) enthält keine Geheimnisse, und Konsumenten-Repos können den Workflow ohne Cross-Repo-PAT verwenden.
 - **Versionierung der Workflows**: per Tag. Konsumenten pinnen `@v1` etc.
 - **Whitelist**: Single-Source-of-Truth ist die Datei in `~/.claude/`. Hier
   liegt nur der Mirror, weil GitHub Actions auf User-Home keinen Zugriff hat.
