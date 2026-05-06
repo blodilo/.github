@@ -25,6 +25,20 @@ jobs:
       backend-path: ./backend
 ```
 
+### Node-Paketmanager
+
+Der Workflow erkennt den Node-Paketmanager automatisch am Lockfile im
+`frontend-path`:
+
+| Lockfile | Paketmanager |
+|---|---|
+| `pnpm-lock.yaml` | `pnpm install --frozen-lockfile` (pnpm@10) |
+| `yarn.lock` | `yarn install --frozen-lockfile` |
+| sonst | `npm ci --no-audit --no-fund` (Default) |
+
+SBOM-Erzeugung läuft in allen drei Fällen über `@cyclonedx/cyclonedx-npm`
+und arbeitet auf dem `node_modules`-Tree.
+
 ## Was passiert bei rotem Build
 
 1. Workflow-Output liest sich z.B. so:
