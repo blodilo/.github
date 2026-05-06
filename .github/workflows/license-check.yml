@@ -34,11 +34,39 @@ jobs:
         with:
           node-version: '20'
 
+      # Detect package manager by lockfile. Supported: npm, pnpm, yarn.
+      # Default = npm (legacy behaviour, keeps existing consumers green).
+      - name: Detect Node package manager
+        id: nodepm
+        if: contains(fromJson('["node", "mixed"]'), inputs.language)
+        working-directory: ${{ inputs.frontend-path }}
+        run: |
+          if [ -f pnpm-lock.yaml ]; then
+            echo "pm=pnpm" >> "$GITHUB_OUTPUT"
+          elif [ -f yarn.lock ]; then
+            echo "pm=yarn" >> "$GITHUB_OUTPUT"
+          else
+            echo "pm=npm" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Setup pnpm
+        if: steps.nodepm.outputs.pm == 'pnpm'
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
       - name: Install frontend deps
         if: contains(fromJson('["node", "mixed"]'), inputs.language)
         working-directory: ${{ inputs.frontend-path }}
-        run: npm ci --no-audit --no-fund
+        run: |
+          case "${{ steps.nodepm.outputs.pm }}" in
+            pnpm) pnpm install --frozen-lockfile ;;
+            yarn) yarn install --frozen-lockfile ;;
+            *)    npm ci --no-audit --no-fund ;;
+          esac
 
+      # cyclonedx-npm walks node_modules and works for npm/pnpm/yarn trees.
+      # --ignore-npm-errors keeps it tolerant of pnpm's symlink layout.
       - name: Generate frontend SBOM
         if: contains(fromJson('["node", "mixed"]'), inputs.language)
         working-directory: ${{ inputs.frontend-path }}
