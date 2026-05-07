@@ -105,7 +105,7 @@ jobs:
         working-directory: ${{ inputs.frontend-path }}
         run: |
           npx --yes @cyclonedx/cyclonedx-npm@latest \
-            --output-file ../sbom-frontend.json \
+            --output-file ${{ github.workspace }}/sbom-frontend.json \
             --output-format json \
             --omit dev \
             --ignore-npm-errors
@@ -127,13 +127,13 @@ jobs:
         run: |
           if [ -f uv.lock ]; then
             uv sync --all-extras
-            uv run cyclonedx-py environment --of json -o ../sbom-backend.json
+            uv run cyclonedx-py environment --of json -o ${{ github.workspace }}/sbom-backend.json
           elif [ -f poetry.lock ]; then
-            cyclonedx-py poetry --of json -o ../sbom-backend.json
+            cyclonedx-py poetry --of json -o ${{ github.workspace }}/sbom-backend.json
           elif [ -f requirements.txt ]; then
-            cyclonedx-py requirements --of json -o ../sbom-backend.json requirements.txt
+            cyclonedx-py requirements --of json -o ${{ github.workspace }}/sbom-backend.json requirements.txt
           else
-            cyclonedx-py environment --of json -o ../sbom-backend.json
+            cyclonedx-py environment --of json -o ${{ github.workspace }}/sbom-backend.json
           fi
 
       # ── Validate ──────────────────────────────────────────────────────────
