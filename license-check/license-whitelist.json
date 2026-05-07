@@ -1,7 +1,7 @@
 {
-  "version": "1.0",
+  "version": "1.1",
   "comment": "Nur durch den Nutzer persönlich erweiterbar. Keine automatischen Schreibzugriffe durch Claude oder Skripte.",
-  "last_updated": "2026-04-20",
+  "last_updated": "2026-05-07",
 
   "green": {
     "comment": "Permissive Licenses — uneingeschränkt erlaubt für kommerzielle Closed-Source-Projekte. Pflicht: Attribution (Copyright-Hinweis) beibehalten.",
@@ -14,7 +14,10 @@
       { "spdx": "0BSD",          "name": "BSD Zero Clause License",      "info": "https://spdx.org/licenses/0BSD.html",          "added": "2026-03-16" },
       { "spdx": "CC0-1.0",       "name": "Creative Commons Zero v1.0",   "info": "https://spdx.org/licenses/CC0-1.0.html",       "added": "2026-03-16" },
       { "spdx": "Zlib", 	 "name": "zlib License",                 "info": "https://spdx.org/licenses/Zlib.html",          "added": "2026-03-16" },
-      { "spdx": "Python-2.0",    "name": "Python License 2.0",           "info": "https://spdx.org/licenses/Python-2.0.html",    "added": "2026-04-20" }
+      { "spdx": "Python-2.0",    "name": "Python License 2.0",           "info": "https://spdx.org/licenses/Python-2.0.html",    "added": "2026-04-20" },
+      { "spdx": "MIT-0",         "name": "MIT No Attribution",           "info": "https://spdx.org/licenses/MIT-0.html",         "added": "2026-05-07" },
+      { "spdx": "BlueOak-1.0.0", "name": "Blue Oak Model License 1.0",   "info": "https://spdx.org/licenses/BlueOak-1.0.0.html", "added": "2026-05-07" },
+      { "spdx": "CC-BY-4.0",     "name": "Creative Commons BY 4.0",      "info": "https://spdx.org/licenses/CC-BY-4.0.html",     "added": "2026-05-07" }
     ]
   },
 
