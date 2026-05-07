@@ -19,6 +19,20 @@ on:
         description: 'Path to the backend package (used for python SBOM)'
         type: string
         default: ./backend
+      extra-checkout-repo:
+        description: |
+          Optional sibling repo to check out next to the consumer repo —
+          needed when package.json contains file:../ deps that point to
+          another local package. Format: owner/repo.
+        type: string
+        required: false
+        default: ''
+    secrets:
+      extra-checkout-token:
+        description: |
+          PAT or installation token with read access to extra-checkout-repo.
+          Required only if that repo is private.
+        required: false
 
 jobs:
   generate-and-check:
@@ -26,6 +40,25 @@ jobs:
     steps:
       - name: Checkout consumer repo
         uses: actions/checkout@v4
+
+      # ── Optional sibling-repo checkout for file:../ deps ──────────────────
+      - name: Checkout extra repo (sibling for file:../ deps)
+        if: inputs.extra-checkout-repo != ''
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ inputs.extra-checkout-repo }}
+          path: __extra
+          token: ${{ secrets.extra-checkout-token || github.token }}
+
+      # actions/checkout@v4 refuses paths outside $GITHUB_WORKSPACE; move
+      # post-checkout so the extra repo lives as a real sibling next to the
+      # consumer (i.e. resolvable by `file:../<extra-repo>` in package.json).
+      - name: Promote extra repo to sibling path
+        if: inputs.extra-checkout-repo != ''
+        run: |
+          EXTRA_NAME="$(basename '${{ inputs.extra-checkout-repo }}')"
+          mv __extra "../${EXTRA_NAME}"
+          ls -la ..
 
       # ── Frontend SBOM (Node) ──────────────────────────────────────────────
       - name: Setup Node
