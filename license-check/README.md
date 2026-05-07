@@ -39,6 +39,29 @@ Der Workflow erkennt den Node-Paketmanager automatisch am Lockfile im
 SBOM-Erzeugung läuft in allen drei Fällen über `@cyclonedx/cyclonedx-npm`
 und arbeitet auf dem `node_modules`-Tree.
 
+### Sibling-Repo für `file:../` deps
+
+Wenn das Konsumenten-`package.json` ein lokales Paket via Pfad referenziert
+(z. B. `"@creaminds/design": "file:../creaminds-design"`), kann der Workflow
+das Sibling-Repo daneben auschecken:
+
+```yaml
+jobs:
+  license-check:
+    uses: blodilo/.github/.github/workflows/license-check.yml@v1
+    with:
+      language: node
+      frontend-path: .
+      extra-checkout-repo: blodilo/creaminds-design   # owner/repo
+    secrets:
+      # nur nötig, wenn extra-checkout-repo privat ist (PAT mit Contents:Read).
+      # Bei public repos reicht GITHUB_TOKEN automatisch.
+      extra-checkout-token: ${{ secrets.CREAMINDS_DESIGN_READ_TOKEN }}
+```
+
+Das ausgecheckte Repo landet als echter Sibling-Ordner neben dem Konsumenten-
+Workspace, sodass pnpm/npm `file:../<name>` regulär auflöst.
+
 ## Was passiert bei rotem Build
 
 1. Workflow-Output liest sich z.B. so:
