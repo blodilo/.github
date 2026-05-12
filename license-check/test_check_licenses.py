@@ -129,6 +129,43 @@ class TestMatchException(unittest.TestCase):
         ex = [{"name": "foo*", "version": "*", "reason": "ok"}]
         self.assertIsNone(mod.match_exception("bar", "1.0", ex))
 
+    def test_package_alias_for_name(self):
+        """compute-network/creaminds convention uses `package` instead of `name`."""
+        ex = [{"package": "x", "version": "*", "reason": "ok"}]
+        self.assertEqual(mod.match_exception("x", "1.0", ex), "ok")
+
+    def test_rationale_alias_for_reason(self):
+        """`rationale` is the longer-form synonym for `reason`."""
+        ex = [{"name": "x", "version": "*", "rationale": "longer prose"}]
+        self.assertEqual(mod.match_exception("x", "1.0", ex), "longer prose")
+
+    def test_pep503_underscore_to_hyphen(self):
+        """SBOM emitters report `typing_extensions`; PyPI canonical is
+        `typing-extensions`. Match either way."""
+        ex = [{"name": "typing-extensions", "version": "*", "reason": "ok"}]
+        self.assertEqual(mod.match_exception("typing_extensions", "4.0", ex), "ok")
+
+    def test_pep503_hyphen_to_underscore(self):
+        ex = [{"name": "typing_extensions", "version": "*", "reason": "ok"}]
+        self.assertEqual(mod.match_exception("typing-extensions", "4.0", ex), "ok")
+
+    def test_pep503_case_insensitive(self):
+        ex = [{"name": "Typing-Extensions", "version": "*", "reason": "ok"}]
+        self.assertEqual(mod.match_exception("typing_extensions", "4.0", ex), "ok")
+
+    def test_long_form_full_entry(self):
+        """Full compute-network-style entry matches and returns rationale."""
+        ex = [{
+            "package": "typing-extensions",
+            "spdx-id": "PSF-2.0",
+            "rationale": "Python Software Foundation License — permissive",
+            "scope": "services/wiki-indexer/",
+        }]
+        self.assertEqual(
+            mod.match_exception("typing_extensions", "4.15.0", ex),
+            "Python Software Foundation License — permissive",
+        )
+
 
 class TestCheck(unittest.TestCase):
     def _run(self, sbom_components, exceptions=None):

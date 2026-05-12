@@ -39,8 +39,11 @@ def load_whitelist(path: Path) -> dict[str, set[str]]:
 def load_exceptions(path: Path | None) -> list[dict]:
     """Return the raw exception entries; matching is done in match_exception().
 
-    An exception entry has {name, version, spdx, reason}. `name` may end with
-    `*` for prefix-match (e.g. `lightningcss*`). `version` may be `*` for any.
+    An exception entry uses either the canonical short-form (`name`, `version`,
+    `spdx`, `reason`) or the longer compute-network/creaminds convention with
+    `package`, `spdx-id`, `rationale`. Both are accepted; matching falls back
+    from one to the other. `name` may end with `*` for prefix-match
+    (e.g. `lightningcss*`). `version` may be `*` for any.
     """
     if path is None or not path.exists():
         return []
@@ -48,22 +51,42 @@ def load_exceptions(path: Path | None) -> list[dict]:
     return raw.get("package-exceptions", [])
 
 
+def _exception_name(ex: dict) -> str:
+    """Read either the canonical `name` field or the `package` alias used by
+    the compute-network/creaminds exception convention."""
+    return ex.get("name") or ex.get("package", "")
+
+
+def _exception_reason(ex: dict) -> str:
+    """Read either `reason` (canonical) or `rationale` (longer-form alias)."""
+    return ex.get("reason") or ex.get("rationale", "")
+
+
 def match_exception(name: str, version: str, exceptions: list[dict]) -> str | None:
     """Return the reason string of the first matching exception, else None."""
     for ex in exceptions:
-        ex_name = ex.get("name", "")
+        ex_name = _exception_name(ex)
         ex_ver = ex.get("version", "*")
-        # Name match: exact or `*`-suffix wildcard prefix-match
+        # Name match: exact or `*`-suffix wildcard prefix-match.
+        # PyPI normalises names with underscores to hyphens (PEP 503), so we
+        # match in both directions to be tolerant of SBOM emitter conventions
+        # (e.g. cyclonedx-py reports `typing_extensions`, PyPI lists the package
+        # as `typing-extensions`).
         if ex_name.endswith("*"):
-            if not name.startswith(ex_name[:-1]):
+            if not (name.startswith(ex_name[:-1]) or _pep503(name).startswith(_pep503(ex_name[:-1]))):
                 continue
-        elif ex_name != name:
+        elif ex_name != name and _pep503(ex_name) != _pep503(name):
             continue
         # Version match
         if ex_ver != "*" and ex_ver != version:
             continue
-        return ex.get("reason", "")
+        return _exception_reason(ex)
     return None
+
+
+def _pep503(name: str) -> str:
+    """PEP 503 name normalisation: lowercase, runs of [-_.] → single `-`."""
+    return re.sub(r"[-_.]+", "-", name).lower()
 
 
 def extract_components(sbom: dict) -> list[dict]:
