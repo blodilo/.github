@@ -18,6 +18,21 @@ Konfigurations-Snippets, die alle blodilo-Projekte konsumieren.
 - **Whitelist**: Single-Source-of-Truth ist die Datei in `~/.claude/`. Hier
   liegt nur der Mirror, weil GitHub Actions auf User-Home keinen Zugriff hat.
 
+## Pre-commit-Hook für Whitelist-Sync
+
+`scripts/git-hooks/pre-commit` synchronisiert bei jedem Commit automatisch
+`~/.claude/license-whitelist.json` → `license-check/license-whitelist.json`.
+Pro Klon einmal aktivieren:
+
+```bash
+git config --local core.hooksPath scripts/git-hooks
+```
+
+Verhalten:
+- Quelle in `~/.claude/` fehlt (CI-Runner) → silent skip
+- Identisch → nichts zu tun
+- Diff → automatisch kopieren + `git add` + Hinweis im Commit-Output
+
 ## Spec / Hintergrund
 
 Die globale License-Management-Doku liegt in `~/.claude/CLAUDE.md`. Dieser

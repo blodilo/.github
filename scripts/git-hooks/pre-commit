@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+# pre-commit hook für blodilo/.github
+#
+# Synchronisiert ~/.claude/license-whitelist.json automatisch in den Repo-Mirror
+# license-check/license-whitelist.json bei jedem Commit. So bleibt der Reusable-
+# Workflow (license-check.yml@v1) konsistent mit der lokalen Whitelist des
+# Maintainers, ohne manuelles `cp + git add`.
+#
+# Aktivierung pro Klon:
+#   git config --local core.hooksPath scripts/git-hooks
+#
+# Verhalten:
+#   - Quelle ~/.claude/license-whitelist.json fehlt   → silent skip (CI-Runner OK)
+#   - Quelle == Mirror                                → nichts zu tun
+#   - Quelle != Mirror                                → cp + git add + Hinweis
+#
+set -euo pipefail
+
+LOCAL_WHITELIST="${HOME}/.claude/license-whitelist.json"
+REPO_MIRROR_REL="license-check/license-whitelist.json"
+
+# Repo-Root (auch bei worktrees korrekt)
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+REPO_MIRROR="${REPO_ROOT}/${REPO_MIRROR_REL}"
+
+if [ ! -f "$LOCAL_WHITELIST" ]; then
+  # Auf CI-Runnern, in worktrees ohne ~/.claude oder bei anderen Usern: silent skip.
+  exit 0
+fi
+
+if [ ! -f "$REPO_MIRROR" ]; then
+  echo "[pre-commit/whitelist-sync] Mirror ${REPO_MIRROR_REL} fehlt — kein Sync möglich." >&2
+  exit 0
+fi
+
+if cmp -s "$LOCAL_WHITELIST" "$REPO_MIRROR"; then
+  # identisch — nichts zu tun
+  exit 0
+fi
+
+echo "[pre-commit/whitelist-sync] ~/.claude/license-whitelist.json weicht von ${REPO_MIRROR_REL} ab — synchronisiere und stage."
+cp "$LOCAL_WHITELIST" "$REPO_MIRROR"
+git add "$REPO_MIRROR_REL"
