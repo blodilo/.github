@@ -27,6 +27,17 @@ on:
         type: string
         required: false
         default: ''
+      npm-package-lock-only:
+        description: |
+          Generate the npm SBOM from package-lock.json instead of walking
+          node_modules. Needed for consumers with file:../ link deps: npm
+          treats the link target's devDependencies as required, `npm ls`
+          (run internally by cyclonedx-npm) fails with ELSPROBLEMS because
+          they are never installed by `npm ci`. Lockfile-only is also the
+          more faithful source for a license gate (exactly what ships).
+        type: boolean
+        required: false
+        default: false
     secrets:
       extra-checkout-token:
         description: |
@@ -100,6 +111,8 @@ jobs:
 
       # cyclonedx-npm walks node_modules and works for npm/pnpm/yarn trees.
       # --ignore-npm-errors keeps it tolerant of pnpm's symlink layout.
+      # With npm-package-lock-only the lockfile is the source instead —
+      # required for file:../ link deps (see input description).
       - name: Generate frontend SBOM
         if: contains(fromJson('["node", "mixed"]'), inputs.language)
         working-directory: ${{ inputs.frontend-path }}
@@ -108,7 +121,8 @@ jobs:
             --output-file ${{ github.workspace }}/sbom-frontend.json \
             --output-format json \
             --omit dev \
-            --ignore-npm-errors
+            --ignore-npm-errors \
+            ${{ inputs.npm-package-lock-only && '--package-lock-only' || '' }}
 
       # ── Backend SBOM (Python) ─────────────────────────────────────────────
       - name: Setup Python
