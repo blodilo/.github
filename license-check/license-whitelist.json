@@ -1,7 +1,7 @@
 {
-  "version": "1.2",
+  "version": "1.3",
   "comment": "Nur durch den Nutzer persönlich erweiterbar. Keine automatischen Schreibzugriffe durch Claude oder Skripte.",
-  "last_updated": "2026-06-12",
+  "last_updated": "2026-09-14",
 
   "green": {
     "comment": "Permissive Licenses — uneingeschränkt erlaubt für kommerzielle Closed-Source-Projekte. Pflicht: Attribution (Copyright-Hinweis) beibehalten.",
@@ -20,8 +20,8 @@
       { "spdx": "Unlicense",     "name": "The Unlicense",                "info": "https://spdx.org/licenses/Unlicense.html",     "added": "2026-06-12" },
       { "spdx": "CNRI-Python",   "name": "CNRI Python License",          "info": "https://spdx.org/licenses/CNRI-Python.html",   "added": "2026-06-12" },
       { "spdx": "MIT-0",         "name": "MIT No Attribution",           "info":  "https://spdx.org/licenses/MIT-0.html",        "added": "2026-05-07" },
-      { "spdx": "CC-BY-4.0",     "name": "Creative Commons BY 4.0",      "info":  "https://spdx.org/licenses/CC-BY-4.0.html",    "added": "2026-05-07" }
-      
+      { "spdx": "CC-BY-4.0",     "name": "Creative Commons BY 4.0",      "info":  "https://spdx.org/licenses/CC-BY-4.0.html",    "added": "2026-05-07" },
+      { "spdx": "CDLA-Permissive-2.0", "name": "Community Data License Agreement – Permissive 2.0", "info": "https://spdx.org/licenses/CDLA-Permissive-2.0.html", "added": "2026-09-14" }       
     ]
   },
 
