@@ -21,7 +21,8 @@
       { "spdx": "CNRI-Python",   "name": "CNRI Python License",          "info": "https://spdx.org/licenses/CNRI-Python.html",   "added": "2026-06-12" },
       { "spdx": "MIT-0",         "name": "MIT No Attribution",           "info":  "https://spdx.org/licenses/MIT-0.html",        "added": "2026-05-07" },
       { "spdx": "CC-BY-4.0",     "name": "Creative Commons BY 4.0",      "info":  "https://spdx.org/licenses/CC-BY-4.0.html",    "added": "2026-05-07" },
-      { "spdx": "CDLA-Permissive-2.0", "name": "Community Data License Agreement – Permissive 2.0", "info": "https://spdx.org/licenses/CDLA-Permissive-2.0.html", "added": "2026-09-14" }       
+      { "spdx": "CDLA-Permissive-2.0", "name": "Community Data License Agreement – Permissive 2.0", "info": "https://spdx.org/licenses/CDLA-Permissive-2.0.html", "added": "2026-09-14" },
+      { "spdx": "OFL-1.1",       "name": "SIL Open Font License 1.1",    "info": "https://spdx.org/licenses/OFL-1.1.html",       "added": "2026-09-14" }
     ]
   },
 
