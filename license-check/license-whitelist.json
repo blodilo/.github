@@ -3,6 +3,29 @@
   "comment": "Nur durch den Nutzer persönlich erweiterbar. Keine automatischen Schreibzugriffe durch Claude oder Skripte.",
   "last_updated": "2026-09-14",
 
+  "data-sources": {
+    "comment": "Lizenzen laufend geholter DATENQUELLEN (Feeds, Korpora). Das CI-Tor prueft sie NICHT — check_licenses.py liest nur green/yellow/red und nur SBOM-Komponenten; Feeds stehen in keinem SBOM. Hier stehen sie, damit die Einordnung zentral auffindbar ist. Durchgesetzt wird sie dort, wo sie bindet: als Freigabe(...) im Holer-Code und in docs/asset-attributions.md des jeweiligen Projekts.",
+    "licenses": [
+      {
+        "spdx": "LicenseRef-scancode-first-epss-usage",
+        "name": "FIRST EPSS Usage Agreement",
+        "info": "https://www.first.org/epss/",
+        "einordnung": "https://scancode-licensedb.aboutcode.org/first-epss-usage.html",
+        "ampel": "gruen",
+        "begruendung": "Permissiv (ScanCode). Kein Copyleft, kommerzielle Nutzung erlaubt, Attribution nur ERBETEN — also weniger als die gruene Liste ohnehin fordert; CC-BY-4.0 steht dort bereits. EINSCHRAENKUNG: dem Abkommen fehlt ausdrueckliche Gewaehrungssprache fuer Weitergabe. Gedeckt ist die Ableitung eigener Kennzahlen, NICHT die Auslieferung des Rohfeeds an Dritte.",
+        "added": "2026-10-22"
+      },
+      {
+        "spdx": "CC0-1.0",
+        "name": "CISA Known Exploited Vulnerabilities Catalog",
+        "info": "https://www.cisa.gov/sites/default/files/licenses/kev/license.txt",
+        "ampel": "gruen",
+        "begruendung": "Woertlich: 'The KEV database is distributed under the Creative Commons 0 1.0 License.' CC0-1.0 steht bereits in der gruenen Liste. Auflage: kein CISA-Logo, kein DHS-Siegel.",
+        "added": "2026-10-22"
+      }
+    ]
+  },
+
   "green": {
     "comment": "Permissive Licenses — uneingeschränkt erlaubt für kommerzielle Closed-Source-Projekte. Pflicht: Attribution (Copyright-Hinweis) beibehalten.",
     "licenses": [
